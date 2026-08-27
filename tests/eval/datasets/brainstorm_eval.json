@@ -1,0 +1,26 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "brainstorm_rome_cultural",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you brainstorm a 3-day cultural itinerary for Rome, Italy? I love history and art."
+          }
+        ]
+      }
+    },
+    {
+      "eval_case_id": "brainstorm_tokyo_foodie",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "I need ideas for 4 days in Tokyo focusing heavily on authentic ramen and street food."
+          }
+        ]
+      }
+    }
+  ]
+}

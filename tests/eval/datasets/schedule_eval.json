@@ -1,0 +1,15 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "schedule_kyoto_timeline",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Generate a 2-day copy-pastable daily schedule for Kyoto covering Fushimi Inari, Kinkaku-ji, and Gion with transit times."
+          }
+        ]
+      }
+    }
+  ]
+}

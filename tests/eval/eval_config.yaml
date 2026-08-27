@@ -1,0 +1,30 @@
+# Evaluation configuration for Vacation Planner Agent
+metrics_to_run:
+  - format_compliance_check
+  - tool_trajectory_check
+  - schedule_feasibility_rubric
+  - memory_recall_rubric
+  - spontaneity_reddit_rubric
+
+custom_metrics:
+  - name: format_compliance_check
+    custom_function_file: judges/format_compliance.py
+
+  - name: tool_trajectory_check
+    custom_function_file: judges/tool_accuracy.py
+
+  - name: schedule_feasibility_rubric
+    custom_function_file: judges/schedule_judge.py
+
+  - name: memory_recall_rubric
+    custom_function_file: judges/memory_judge.py
+
+  - name: spontaneity_reddit_rubric
+    custom_function_file: judges/spontaneity_judge.py
+
+thresholds:
+  format_compliance_check: 0.80
+  tool_trajectory_check: 0.90
+  schedule_feasibility_rubric: 0.80
+  memory_recall_rubric: 0.90
+  spontaneity_reddit_rubric: 0.80

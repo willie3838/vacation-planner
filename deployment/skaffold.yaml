@@ -1,0 +1,13 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: vacation-planner
+profiles:
+  - name: staging
+    manifests:
+      rawYaml:
+        - deployment/cloudrun-service.yaml
+  - name: prod
+    manifests:
+      rawYaml:
+        - deployment/cloudrun-service.yaml

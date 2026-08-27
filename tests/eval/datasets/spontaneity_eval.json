@@ -1,0 +1,15 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "spontaneous_silverlake_cafe",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "I am currently around Silver Lake in Los Angeles. Give me some spontaneous lowkey spots to read a book and grab coffee, preferably from Reddit."
+          }
+        ]
+      }
+    }
+  ]
+}

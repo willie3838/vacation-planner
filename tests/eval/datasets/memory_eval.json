@@ -1,0 +1,15 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "memory_vegan_preference_recall",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Remember that I am 100% vegan and strictly avoid tourist traps. What are 3 dinner spots you recommend in Paris?"
+          }
+        ]
+      }
+    }
+  ]
+}
