@@ -14,8 +14,6 @@
 
 """Unit tests for Skill 2: Generate Schedule (3 Positive + 3 Negative)."""
 
-import pytest
-
 from app.tools.schedule import generate_schedule
 
 # --- Positive Test Cases (3 Cases) ---
@@ -111,16 +109,20 @@ def test_generate_schedule_relaxed_pacing_limit():
 # --- Negative Test Cases (3 Cases) ---
 
 
-def test_generate_schedule_empty_activities_raises_error():
-    """Negative 1: Empty activities list raises ValueError."""
-    with pytest.raises(ValueError, match="Selected activities list cannot be empty"):
-        generate_schedule(
-            destination="Rome",
-            days_count=2,
-            selected_activities=[],
-            pace="balanced",
-            lodging_area="City Center",
-        )
+def test_generate_schedule_empty_activities_returns_error_recovery():
+    """Negative 1: Empty activities list returns structured guided recovery response."""
+    result = generate_schedule(
+        destination="Rome",
+        days_count=2,
+        selected_activities=[],
+        pace="balanced",
+        lodging_area="City Center",
+    )
+    assert result["status"] == "error"
+    assert result["error"] is not None
+    assert "Selected activities list cannot be empty" in result["error"]
+    assert result["recovery_instruction"] is not None
+    assert result.suggested_action == "BRAINSTORM_ACTIVITIES_FIRST"
 
 
 def test_generate_schedule_overcrowded_warning():
@@ -145,21 +147,26 @@ def test_generate_schedule_overcrowded_warning():
     assert "Overcrowded schedule" in result["pacing_warning"]
 
 
-def test_generate_schedule_invalid_destination_raises_error():
-    """Negative 3: Blank destination or invalid day count raises ValueError."""
-    with pytest.raises(ValueError, match="Destination cannot be empty"):
-        generate_schedule(
-            destination="   ",
-            days_count=1,
-            selected_activities=[{"name": "Sight"}],
-            pace="balanced",
-            lodging_area="Center",
-        )
-    with pytest.raises(ValueError, match="Days count must be positive"):
-        generate_schedule(
-            destination="London",
-            days_count=-1,
-            selected_activities=[{"name": "Sight"}],
-            pace="balanced",
-            lodging_area="Center",
-        )
+def test_generate_schedule_invalid_destination_returns_error_recovery():
+    """Negative 3: Blank destination or invalid day count returns structured guided recovery response."""
+    result_blank = generate_schedule(
+        destination="   ",
+        days_count=1,
+        selected_activities=[{"name": "Sight"}],
+        pace="balanced",
+        lodging_area="Center",
+    )
+    assert result_blank["status"] == "error"
+    assert result_blank["recovery_instruction"] is not None
+    assert result_blank.suggested_action == "PROMPT_USER_FOR_DESTINATION"
+
+    result_neg = generate_schedule(
+        destination="London",
+        days_count=-1,
+        selected_activities=[{"name": "Sight"}],
+        pace="balanced",
+        lodging_area="Center",
+    )
+    assert result_neg["status"] == "error"
+    assert result_neg["recovery_instruction"] is not None
+    assert result_neg.suggested_action == "PROMPT_USER_FOR_DURATION"

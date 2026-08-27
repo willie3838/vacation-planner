@@ -17,6 +17,8 @@
 import logging
 from typing import Any
 
+from app.tools.schemas import ScheduleDay, ScheduleResponse, TimelineItem
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,9 +26,9 @@ def generate_schedule(
     destination: str,
     days_count: int,
     selected_activities: list[dict[str, Any]],
-    pace: str,
-    lodging_area: str,
-) -> dict[str, Any]:
+    pace: str = "balanced",
+    lodging_area: str = "",
+) -> ScheduleResponse:
     """Generates a day-by-day copy-pastable schedule taking transit distance and durations into account.
 
     Args:
@@ -37,14 +39,29 @@ def generate_schedule(
         lodging_area: Central neighborhood or hotel location used to anchor start/end transit.
 
     Returns:
-        A dictionary containing daily breakdowns, calculated transit buffers, locations, costs, and copy-pastable markdown.
+        A ScheduleResponse containing daily breakdowns, calculated transit buffers, locations, costs, and copy-pastable markdown.
     """
     if not destination or not destination.strip():
-        raise ValueError("Destination cannot be empty.")
+        return ScheduleResponse(
+            status="error",
+            error="Destination cannot be empty.",
+            recovery_instruction="Ask the user for the trip destination before generating a daily schedule.",
+            suggested_action="PROMPT_USER_FOR_DESTINATION",
+        )
     if days_count <= 0:
-        raise ValueError(f"Days count must be positive integer, got {days_count}.")
+        return ScheduleResponse(
+            status="error",
+            error=f"Days count must be positive integer, got {days_count}.",
+            recovery_instruction="Ask the user for a valid number of trip days (e.g. 1, 3, 5).",
+            suggested_action="PROMPT_USER_FOR_DURATION",
+        )
     if not selected_activities or len(selected_activities) == 0:
-        raise ValueError("Selected activities list cannot be empty.")
+        return ScheduleResponse(
+            status="error",
+            error="Selected activities list cannot be empty.",
+            recovery_instruction="Call brainstorm_itinerary first or ask the user which attractions or activities they want to include in their daily schedule.",
+            suggested_action="BRAINSTORM_ACTIVITIES_FIRST",
+        )
 
     dest = destination.strip()
     trip_pace = pace.strip() if pace else "balanced"
@@ -61,7 +78,7 @@ def generate_schedule(
     if total_activities / days_count > 6:
         pacing_warning = "Overcrowded schedule detected (>6 activities/day). Buffer times have been optimized to avoid burnout."
 
-    days = []
+    days: list[ScheduleDay] = []
     markdown_lines = [
         f"# 🗓️ {days_count}-Day Vacation Itinerary: {dest}",
         f"**Base Lodging / Hub**: {lodging} | **Pacing**: {trip_pace.capitalize()}\n",
@@ -83,7 +100,7 @@ def generate_schedule(
         )
         markdown_lines.append("| :--- | :--- | :--- | :--- | :--- |")
 
-        day_timeline = []
+        day_timeline: list[TimelineItem] = []
         prior_location = lodging
 
         for _ in range(num_for_this_day):
@@ -108,15 +125,15 @@ def generate_schedule(
             end_min = end_minutes_total % 60
             end_str = f"{end_hour:02d}:{end_min:02d}"
 
-            item = {
-                "time_slot": f"{start_str} - {end_str}",
-                "name": act_name,
-                "location": act_loc,
-                "transit_from_prior_minutes": transit_mins,
-                "transit_from_prior_location": prior_location,
-                "duration_minutes": duration_mins,
-                "estimated_cost": act_cost,
-            }
+            item = TimelineItem(
+                time_slot=f"{start_str} - {end_str}",
+                name=act_name,
+                location=act_loc,
+                transit_from_prior_minutes=transit_mins,
+                transit_from_prior_location=prior_location,
+                duration_minutes=duration_mins,
+                estimated_cost=act_cost,
+            )
             day_timeline.append(item)
 
             markdown_lines.append(
@@ -131,11 +148,11 @@ def generate_schedule(
             act_idx += 1
 
         days.append(
-            {
-                "day_number": d,
-                "theme": f"Day {d} in {dest}",
-                "timeline": day_timeline,
-            }
+            ScheduleDay(
+                day_number=d,
+                theme=f"Day {d} in {dest}",
+                timeline=day_timeline,
+            )
         )
         markdown_lines.append("")
 
@@ -146,13 +163,13 @@ def generate_schedule(
 
     formatted_markdown = "\n".join(markdown_lines)
 
-    return {
-        "status": "success",
-        "destination": dest,
-        "days_count": days_count,
-        "pace": trip_pace,
-        "lodging_area": lodging,
-        "pacing_warning": pacing_warning,
-        "days": days,
-        "copy_pastable_markdown": formatted_markdown,
-    }
+    return ScheduleResponse(
+        status="success",
+        destination=dest,
+        days_count=days_count,
+        pace=trip_pace,
+        lodging_area=lodging,
+        pacing_warning=pacing_warning,
+        days=days,
+        copy_pastable_markdown=formatted_markdown,
+    )

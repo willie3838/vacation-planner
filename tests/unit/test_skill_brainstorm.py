@@ -16,8 +16,6 @@
 
 from unittest.mock import patch
 
-import pytest
-
 from app.tools.brainstorm import brainstorm_itinerary
 
 # --- Positive Test Cases (3 Cases) ---
@@ -79,33 +77,41 @@ def test_brainstorm_multi_day_expansion():
 # --- Negative Test Cases (3 Cases) ---
 
 
-def test_brainstorm_empty_destination_raises_error():
-    """Negative 1: Empty or whitespace destination raises ValueError."""
-    with pytest.raises(ValueError, match="Destination cannot be empty"):
-        brainstorm_itinerary(
-            destination="   ",
-            duration_days=3,
-            travel_style="budget",
-            interests="",
-        )
+def test_brainstorm_empty_destination_returns_error_recovery():
+    """Negative 1: Empty or whitespace destination returns structured guided recovery response."""
+    result = brainstorm_itinerary(
+        destination="   ",
+        duration_days=3,
+        travel_style="budget",
+        interests="",
+    )
+    assert result["status"] == "error"
+    assert result["error"] is not None
+    assert "Destination cannot be empty" in result["error"]
+    assert result["recovery_instruction"] is not None
+    assert result.suggested_action == "PROMPT_USER_FOR_DESTINATION"
 
 
-def test_brainstorm_invalid_duration_raises_error():
-    """Negative 2: Zero or negative duration raises ValueError."""
-    with pytest.raises(ValueError, match="Duration days must be a positive integer"):
-        brainstorm_itinerary(
-            destination="Paris, France",
-            duration_days=0,
-            travel_style="balanced",
-            interests="art",
-        )
-    with pytest.raises(ValueError, match="Duration days must be a positive integer"):
-        brainstorm_itinerary(
-            destination="Paris, France",
-            duration_days=-3,
-            travel_style="balanced",
-            interests="art",
-        )
+def test_brainstorm_invalid_duration_returns_error_recovery():
+    """Negative 2: Zero or negative duration returns structured guided recovery response."""
+    result_zero = brainstorm_itinerary(
+        destination="Paris, France",
+        duration_days=0,
+        travel_style="balanced",
+        interests="art",
+    )
+    assert result_zero["status"] == "error"
+    assert result_zero["recovery_instruction"] is not None
+    assert result_zero.suggested_action == "PROMPT_USER_FOR_DURATION"
+
+    result_neg = brainstorm_itinerary(
+        destination="Paris, France",
+        duration_days=-3,
+        travel_style="balanced",
+        interests="art",
+    )
+    assert result_neg["status"] == "error"
+    assert result_neg["recovery_instruction"] is not None
 
 
 @patch(

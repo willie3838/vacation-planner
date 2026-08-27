@@ -16,8 +16,6 @@
 
 from unittest.mock import patch
 
-import pytest
-
 from app.tools.spontaneity import spontaneous_recommendations
 
 # --- Positive Test Cases (3 Cases) ---
@@ -73,14 +71,18 @@ def test_spontaneity_walking_distance_radius():
 # --- Negative Test Cases (3 Cases) ---
 
 
-def test_spontaneity_blank_location_raises_error():
-    """Negative 1: Blank current location raises ValueError."""
-    with pytest.raises(ValueError, match="Current location cannot be empty"):
-        spontaneous_recommendations(
-            current_location="   ",
-            mood_or_preference="coffee",
-            radius="walking distance",
-        )
+def test_spontaneity_blank_location_returns_error_recovery():
+    """Negative 1: Blank current location returns structured guided recovery response."""
+    result = spontaneous_recommendations(
+        current_location="   ",
+        mood_or_preference="coffee",
+        radius="walking distance",
+    )
+    assert result["status"] == "error"
+    assert result["error"] is not None
+    assert "Current location cannot be empty" in result["error"]
+    assert result["recovery_instruction"] is not None
+    assert result.suggested_action == "PROMPT_USER_FOR_LOCATION"
 
 
 def test_spontaneity_empty_mood_defaults_gracefully():
