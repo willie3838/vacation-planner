@@ -24,8 +24,11 @@ from google.adk.runners import Runner
 
 from app.app_utils import services
 from app.app_utils.a2a import attach_a2a_routes
+from app.telemetry.logging import setup_structured_logging
 
 load_dotenv()
+setup_structured_logging()
+
 allow_origins = (
     os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
 )
@@ -41,6 +44,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     runner = Runner(
         app=adk_app,
         session_service=services.get_session_service(),
+        memory_service=services.get_memory_service(),
         artifact_service=services.get_artifact_service(),
         auto_create_session=True,
     )
@@ -62,6 +66,7 @@ app: FastAPI = get_fast_api_app(
     artifact_service_uri=services.ARTIFACT_SERVICE_URI,
     allow_origins=allow_origins,
     session_service_uri=services.SESSION_SERVICE_URI,
+    memory_service_uri=services.MEMORY_SERVICE_URI,
     otel_to_cloud=True,
     lifespan=lifespan,
     gemini_enterprise_app_name="app",

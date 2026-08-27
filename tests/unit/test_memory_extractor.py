@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for Memory Extraction and Preference Parsing."""
+"""Unit tests for Memory Extraction, Preference Parsing, and PII Sanitization."""
 
 from unittest.mock import AsyncMock, MagicMock
 
@@ -36,6 +36,15 @@ def test_extract_dietary_and_budget_preferences():
     assert "hate crowds" in extracted["dislikes_and_avoidances"]
 
 
+def test_extract_preferences_with_pii_sanitization():
+    """Verifies that preferences are extracted accurately even when input contains sensitive PII."""
+    user_text = "Email me at traveler@example.com or call +1-416-555-0199. I am strictly gluten-free and love luxury."
+    extracted = extract_traveler_preferences_from_text(user_text)
+
+    assert "gluten-free" in extracted["dietary_restrictions"]
+    assert "luxury" in extracted["budget_hints"]
+
+
 def test_extract_pacing_and_luxury_preferences():
     """Verifies relaxed pace and luxury hints extraction."""
     user_text = "Looking for a relaxed luxury 5-star resort experience in Kyoto."
@@ -50,6 +59,7 @@ def test_extract_pacing_and_luxury_preferences():
 async def test_generate_memories_callback_invokes_session_add():
     """Verifies that generate_memories_callback triggers add_session_to_memory."""
     mock_ctx = MagicMock()
+    mock_ctx.state = {"contact_email": "user@example.com", "diet": "vegan"}
     mock_ctx.add_session_to_memory = AsyncMock()
 
     result = await generate_memories_callback(mock_ctx)
@@ -61,6 +71,7 @@ async def test_generate_memories_callback_invokes_session_add():
 async def test_generate_memories_callback_handles_exception_gracefully():
     """Verifies that errors in Memory Bank ingestion do not break the conversation flow."""
     mock_ctx = MagicMock()
+    mock_ctx.state = {}
     mock_ctx.add_session_to_memory = AsyncMock(
         side_effect=RuntimeError("Memory service down")
     )

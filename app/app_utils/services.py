@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Process-wide ADK session/artifact services shared by every serving surface.
+"""Process-wide ADK session/artifact/memory services shared by every serving surface.
 
 Registered under ``shared://`` so the ADK web routes, the A2A path, and the
-reasoning_engine adapter share one instance: a session created on any surface
+reasoning_engine adapter share one instance: a session or memory created on any surface
 is visible to the others.
 """
 
@@ -30,6 +30,7 @@ from google.adk.cli.utils.service_factory import create_session_service_from_opt
 
 SESSION_SERVICE_URI = "shared://session"
 ARTIFACT_SERVICE_URI = "shared://artifact"
+MEMORY_SERVICE_URI = "shared://memory"
 
 _AGENT_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,8 +49,6 @@ def get_session_service():
 
         return VertexAiSessionService(
             project=os.environ.get("GOOGLE_CLOUD_PROJECT"),
-            # Runtime-injected agent-engine region, not GOOGLE_CLOUD_LOCATION
-            # (which agent.py pins to "global").
             location=os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_LOCATION")
             or os.environ.get("GOOGLE_CLOUD_LOCATION"),
             agent_engine_id=agent_engine_id,
@@ -67,6 +66,35 @@ def get_artifact_service():
     return InMemoryArtifactService()
 
 
+@functools.cache
+def get_memory_service():
+    """Process-wide memory service using GCP Vertex AI Memory Bank."""
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT", "l200-506518")
+    location = os.environ.get(
+        "GOOGLE_CLOUD_AGENT_ENGINE_LOCATION",
+        os.environ.get("GOOGLE_CLOUD_LOCATION", "us-east1"),
+    )
+    agent_engine_id = os.environ.get("GOOGLE_CLOUD_AGENT_ENGINE_ID")
+
+    try:
+        from google.adk.memory.vertex_ai_memory_bank_service import (
+            VertexAiMemoryBankService,
+        )
+
+        return VertexAiMemoryBankService(
+            project=project,
+            location=location,
+            agent_engine_id=agent_engine_id,
+        )
+    except Exception:
+        from google.adk.memory.in_memory_memory_service import (
+            InMemoryMemoryService,
+        )
+
+        return InMemoryMemoryService()
+
+
 _registry = get_service_registry()
 _registry.register_session_service("shared", lambda uri, **kw: get_session_service())
 _registry.register_artifact_service("shared", lambda uri, **kw: get_artifact_service())
+_registry.register_memory_service("shared", lambda uri, **kw: get_memory_service())
