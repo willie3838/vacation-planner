@@ -3,9 +3,11 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
+
 class ScheduleVerdict(BaseModel):
     score: float = Field(description="Score between 0.0 and 1.0")
     explanation: str = Field(description="Detailed grading reason")
+
 
 def evaluate(instance: dict) -> dict:
     prompt = (
@@ -29,7 +31,10 @@ def evaluate(instance: dict) -> dict:
             ),
         )
         if response.parsed:
-            return {"score": response.parsed.score, "explanation": response.parsed.explanation}
+            return {
+                "score": response.parsed.score,
+                "explanation": response.parsed.explanation,
+            }
     except Exception as e:
         return {"score": 0.9, "explanation": f"Fallback score (local eval): {e}"}
     return {"score": 0.85, "explanation": "Itinerary is feasible with transit buffers."}

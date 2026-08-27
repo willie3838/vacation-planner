@@ -3,9 +3,11 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
 
+
 class MemoryVerdict(BaseModel):
     score: float = Field(description="Score 1.0 if memory adhered, 0.0 if violated")
     explanation: str = Field(description="Detailed reason")
+
 
 def evaluate(instance: dict) -> dict:
     prompt = (
@@ -27,7 +29,13 @@ def evaluate(instance: dict) -> dict:
             ),
         )
         if response.parsed:
-            return {"score": response.parsed.score, "explanation": response.parsed.explanation}
+            return {
+                "score": response.parsed.score,
+                "explanation": response.parsed.explanation,
+            }
     except Exception as e:
         return {"score": 1.0, "explanation": f"Fallback score (local eval): {e}"}
-    return {"score": 1.0, "explanation": "Agent strictly adhered to stated traveler preferences."}
+    return {
+        "score": 1.0,
+        "explanation": "Agent strictly adhered to stated traveler preferences.",
+    }

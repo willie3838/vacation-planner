@@ -64,6 +64,7 @@ app: FastAPI = get_fast_api_app(
     session_service_uri=services.SESSION_SERVICE_URI,
     otel_to_cloud=True,
     lifespan=lifespan,
+    gemini_enterprise_app_name="app",
 )
 app.title = "vacation-planner"
 app.description = "API for interacting with the Agent vacation-planner"
