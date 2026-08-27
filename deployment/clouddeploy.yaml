@@ -17,4 +17,4 @@ metadata:
   name: production
 description: "Cloud Run Production Environment"
 run:
-  location: projects/YOUR_PROJECT_ID/locations/us-central1
+  location: projects/l200-506518/locations/us-central1
