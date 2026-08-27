@@ -38,7 +38,7 @@ steps:
       - "deployment/Dockerfile"
       - "."
 
-  # 4. Trigger Cloud Deploy Release (Staging -> Automated Prod)
+  # 4. Trigger Cloud Deploy Release
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     id: "cloud-deploy-release"
     entrypoint: "gcloud"

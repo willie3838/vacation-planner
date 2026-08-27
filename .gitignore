@@ -208,5 +208,8 @@ tools/a2a-inspector/
 *-key.json
 credentials*.json
 
+# Deployment metadata
+deployment_metadata.json
+
 # Git worktrees
 .worktrees/

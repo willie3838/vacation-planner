@@ -2,14 +2,9 @@ apiVersion: deploy.cloud.google.com/v1
 kind: DeliveryPipeline
 metadata:
   name: vacation-planner-pipeline
-description: "100% Automated CD pipeline for Vacation Planner Agent"
+description: "CD pipeline for Vacation Planner Agent"
 serialPipeline:
   stages:
-    - targetId: staging
-      profiles: [staging]
-      strategy:
-        standard:
-          verify: true
     - targetId: production
       profiles: [prod]
       strategy:
@@ -19,15 +14,7 @@ serialPipeline:
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
 metadata:
-  name: staging
-description: "Cloud Run Staging Environment"
-run:
-  location: projects/YOUR_PROJECT_ID/locations/us-central1
----
-apiVersion: deploy.cloud.google.com/v1
-kind: Target
-metadata:
   name: production
-description: "Cloud Run Production Environment (Auto-promoted upon staging verification)"
+description: "Cloud Run Production Environment"
 run:
   location: projects/YOUR_PROJECT_ID/locations/us-central1
