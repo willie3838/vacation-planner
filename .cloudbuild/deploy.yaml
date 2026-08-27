@@ -2,21 +2,9 @@
 # Direct single-environment deployment for Vacation Planner Agent
 
 steps:
-  # 1. Build and Push Container Image
-  - name: "gcr.io/cloud-builders/docker"
-    id: build-image
-    entrypoint: /bin/bash
-    args:
-      - "-c"
-      - |
-        docker build \
-          -t $_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPO_NAME/$_CONTAINER_NAME:$SHORT_SHA \
-          .
-        docker push $_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPO_NAME/$_CONTAINER_NAME:$SHORT_SHA
-
-  # 2. Deploy to Cloud Run
+  # Deploy to Vertex AI Agent Runtime
   - name: "gcr.io/cloud-builders/gcloud"
-    id: deploy
+    id: deploy-agent-runtime
     entrypoint: /bin/bash
     args:
       - "-c"
@@ -24,15 +12,14 @@ steps:
         curl -LsSf https://astral.sh/uv/0.11.7/install.sh | sh
         export PATH="$$HOME/.local/bin:$$PATH"
         uvx google-agents-cli@1.4.1 deploy \
+          --deployment-target agent_runtime \
           --project ${PROJECT_ID} \
           --region ${_REGION} \
-          --image $_REGION-docker.pkg.dev/$PROJECT_ID/$_ARTIFACT_REGISTRY_REPO_NAME/$_CONTAINER_NAME:$SHORT_SHA \
+          --no-confirm-project \
           --update-env-vars="OTEL_RESOURCE_ATTRIBUTES=service.version=$COMMIT_SHA"
 
 substitutions:
-  _REGION: us-central1
-  _ARTIFACT_REGISTRY_REPO_NAME: vacation-planner-repo
-  _CONTAINER_NAME: vacation-planner
+  _REGION: us-east1
 
 logsBucket: gs://${PROJECT_ID}-vacation-planner-logs/build-logs
 options:
